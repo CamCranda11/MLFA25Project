@@ -13,3 +13,6 @@ I have built my model and have a few example use cases. I have yet to implement 
 
 # Session 4 - 10/30/25, 10:02 AM
 I have added more features to my model and expanded my k yet again to create a more refined model. I plan to add a system to sort into genres after clustering to create a more organized output.
+
+# Session 5 - 10/30/25, 12:41 AM
+I have added a code block to find all songs by a specific artist, and I believe the way the dataset was created was using artists on some form of supported label as I did not find any independent artists during my searching. I also added a block of code to use when I am ready to save my clustered data.
