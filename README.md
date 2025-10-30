@@ -10,3 +10,6 @@ After consulting a few sources, I have elected to shift my model to a K-Means Cl
 
 # Session 3 - 10/29/25, 12:00 PM
 I have built my model and have a few example use cases. I have yet to implement a search option and it will require some tests in order to judge its accuracy. Current outlook is good.
+
+# Session 4 - 10/30/25, 10:02 AM
+I have added more features to my model and expanded my k yet again to create a more refined model. I plan to add a system to sort into genres after clustering to create a more organized output.
