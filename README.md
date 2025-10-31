@@ -16,3 +16,6 @@ I have added more features to my model and expanded my k yet again to create a m
 
 # Session 5 - 10/30/25, 12:41 AM
 I have added a code block to find all songs by a specific artist, and I believe the way the dataset was created was using artists on some form of supported label as I did not find any independent artists during my searching. I also added a block of code to use when I am ready to save my clustered data.
+
+# Session 6 - 10/31/25, 3:02 PM
+I have restructured the actual code to cluster within genre as a part of the search, instead of initializing clusters at the start. This should hopefully create a more accurate model and a faster program.
