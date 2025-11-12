@@ -19,3 +19,9 @@ I have added a code block to find all songs by a specific artist, and I believe 
 
 # Session 6 - 10/31/25, 3:02 PM
 I have restructured the actual code to cluster within genre as a part of the search, instead of initializing clusters at the start. This should hopefully create a more accurate model and a faster program.
+
+# Project Milestone - 11/11
+Unfortunately, not many changes in the last week and a half, but I did go through rigorous testing and believe my model is ready to be turned into a web app. The way it works is:
+1 - When a search is made, the program finds every song in the dataset that is in the same genre as the one being searched.
+2 - After all the songs in the genre are compiled, the program uses a K-Means Clustering model to find the closest options to the song and outputs 5 random ones.
+By clustering after I sort, I have a program that runs quickly, while still being accurate and having some necessary variance.
