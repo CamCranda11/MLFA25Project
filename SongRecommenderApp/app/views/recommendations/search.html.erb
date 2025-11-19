@@ -1,2 +1,56 @@
-<h1>Recommendations#search</h1>
-<p>Find me in app/views/recommendations/search.html.erb</p>
+<div class="container">
+  <h1>Cameron's Song Recommendation Tool </h1>
+
+  <%= form_with url: recommendations_search_path, method: :get, local: true, class: "mb-4" do %>
+    <div class="row">
+      <div class="col-md-5">
+        <%= text_field_tag :song_name, params[:song_name], class: "form-control", placeholder: "Enter Song Name (e.g., Roman Empire)" %>
+      </div>
+      <div class="col-md-5">
+        <%= text_field_tag :artist_name, params[:artist_name], class: "form-control", placeholder: "Enter Artist Name (e.g., MISSIO)" %>
+      </div>
+      <div class="col-md-2">
+        <%= submit_tag "Find Recommendations", class: "btn btn-primary w-100" %>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @error %>
+    <div class="alert alert-danger" role="alert">
+      <strong>Error:</strong> <%= @error %>
+    </div>
+  <% elsif params[:song_name].present? %>
+    <h2>Recommendations for "<%= params[:song_name] %>" by <%= params[:artist_name] %></h2>
+
+    <% if @recommendations.any? %>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Track Name</th>
+            <th>Artist Name</th>
+            <th>Genre</th>
+            <th>Danceability</th>
+            <th>Energy</th>
+            <th>Valence</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @recommendations.first(5).each do |song| %>
+            <tr>
+              <td><%= song['track_name'] %></td>
+              <td><%= song['artist_name'] %></td>
+              <td><%= song['genre'] %></td>
+              <td><%= '%.3f' % song['danceability'] %></td>
+              <td><%= '%.3f' % song['energy'] %></td>
+              <td><%= '%.3f' % song['valence'] %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <div class="alert alert-info" role="alert">
+        Search completed, but no recommendations were found.
+      </div>
+    <% end %>
+  <% end %>
+</div>
