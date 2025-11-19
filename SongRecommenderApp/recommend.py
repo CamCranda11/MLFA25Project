@@ -6,7 +6,7 @@ import sys
 import requests
 from io import StringIO
 
-DATA_URL = 'https://drive.google.com/file/d/1B3OF34i5t-bASvkROB0b-OSmKNkF-Khv/view?usp=drive_link'
+DATA_URL = 'https://drive.google.com/uc?export=download&id=1B3OF34i5t-bASvkROB0b-OSmKNkF-Khv'
 OPTIMAL_K = 50
 FEATURES_TO_CLUSTER = ['danceability', 'energy', 'mode', 'speechiness', 'acousticness', 'instrumentalness', 'valence']
 
@@ -17,6 +17,9 @@ def load_data():
         
         # Load the content into a pandas DataFrame (adjust sep if needed, e.g., sep=';')
         song_data = pd.read_csv(StringIO(response.text))
+
+        song_data.columns = song_data.columns.str.strip()
+        song_data.columns = song_data.columns.str.lower()
         
         return song_data
 
