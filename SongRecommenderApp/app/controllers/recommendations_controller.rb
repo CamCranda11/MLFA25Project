@@ -10,7 +10,7 @@ class RecommendationsController < ApplicationController
       song_name = params[:song_name]
       artist_name = params[:artist_name]
       
-      venv_python = Rails.root.join(".venv", "bin", "python")
+      venv_python = Rails.root.join(".venv", "bin", "python3")
       
       command = [venv_python.to_s, "recommend.py", song_name, artist_name]
       
