@@ -25,3 +25,6 @@ Unfortunately, not many changes in the last week and a half, but I did go throug
 1 - When a search is made, the program finds every song in the dataset that is in the same genre as the one being searched.
 2 - After all the songs in the genre are compiled, the program uses a K-Means Clustering model to find the closest options to the song and outputs 5 random ones.
 By clustering after I sort, I have a program that runs quickly, while still being accurate and having some necessary variance.
+
+# Session 7 - 11/20/25, 3:12 PM
+I rolled back some changes so I did lose my session update from yesterday, but very little was completed in that time. Luckily today I have been able to get a now functional search method (current commit). My next steps are to get the recommendations system working and to revise the search to allow users to search by artist and/or song name.
