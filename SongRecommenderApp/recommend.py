@@ -37,7 +37,21 @@ def load_data():
         print(json.dumps({"error": f"Failed to load or clean data: {e}"}))
         sys.exit(1)
 
-def recommend_songs(input_song_name, input_artist_name, data_df, num_recs=5):
+def search_song_matches(input_song_name, data_df, max_matches=10):
+    input_song_name = input_song_name.lower()
+
+    matches = data_df[
+        data_df['track_name'].str.contains(input_song_name, na=False)
+    ]
+
+    if matches.empty:
+        return {"error": f"No songs matching '{input_song_name}' found in the dataset."}
+
+    output_columns = ['track_name', 'artist_name', 'genre']
+
+    return matches[output_columns].drop_duplicates().head(max_matches).to_dict('records')
+
+def get_song_recommendations(input_song_name, input_artist_name, data_df, num_recs=5):
     try:
         input_song_name = input_song_name.lower()
         input_artist_name = input_artist_name.lower()
@@ -92,14 +106,13 @@ def recommend_songs(input_song_name, input_artist_name, data_df, num_recs=5):
         return {"error": f"An unexpected error occurred during recommendation: {e}"}
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
+    song_data = load_data()
+
+    if len(sys.argv) < 2:
         print(json.dumps({"error": "Missing arguments. Usage: python recommend.py <song_name> <artist_name>"}))
         sys.exit(1)
-        
-    song_data = load_data()
     
     song = sys.argv[1]
-    artist = sys.argv[2]
     
-    results = recommend_songs(song, artist, song_data)
+    results = search_song_matches(song, song_data)
     print(json.dumps(results))

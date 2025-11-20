@@ -1,41 +1,36 @@
 require 'open3'
 require 'json'
+require 'shellwords'
 
 class RecommendationsController < ApplicationController
   def search
-    @recommendations = []
+    @matches = []
     @error = nil
-    
-    if params[:song_name].present? && params[:artist_name].present?
-      song_name = params[:song_name]
-      artist_name = params[:artist_name]
-      
-      venv_python = "/home/MLFA25Project/SongRecommenderApp/.venv/bin/python"
+
+    if params[:song_name].present? && !params[:selected_song].present? # Only run if search button is clicked
+
+      python_executable = "/usr/bin/python3" 
       script_path = Rails.root.join("recommend.py").to_s
-      full_command = "#{venv_python} #{script_path} #{song_name} #{artist_name}"
-      
-      command = ["/bin/sh", "-c", full_command]
-      
+      safe_song_name = Shellwords.escape(params[:song_name])
+
+      command = [python_executable, script_path, safe_song_name] 
+
       stdout, stderr, status = Open3.capture3(*command)
-      
+
       if status.success?
         begin
           results = JSON.parse(stdout)
-          
+
           if results.is_a?(Hash) && results['error']
             @error = results['error']
           else
-            @recommendations = results
-            
-            if @recommendations.empty?
-              @error = "No similar songs were found."
-            end
+            @matches = results # Store matches in a new instance variable
           end
         rescue JSON::ParserError
           @error = "Error parsing Python script output. Raw output: #{stdout}"
         end
       else
-        @error = "Failed to run recommendation script. Check Python/library installations. Error: #{stderr}"
+        @error = "Failed to run search script. Error: #{stderr}"
       end
     end
   end
