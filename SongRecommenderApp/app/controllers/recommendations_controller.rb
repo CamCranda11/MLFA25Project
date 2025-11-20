@@ -11,8 +11,10 @@ class RecommendationsController < ApplicationController
       artist_name = params[:artist_name]
       
       venv_python = "/home/MLFA25Project/SongRecommenderApp/.venv/bin/python"
+      script_path = Rails.root.join("recommend.py").to_s
+      full_command = "#{venv_python} #{script_path} #{song_name} #{artist_name}"
       
-      command = [venv_python.to_s, "recommend.py", song_name, artist_name]
+      command = ["/bin/sh", "-c", full_command]
       
       stdout, stderr, status = Open3.capture3(*command)
       

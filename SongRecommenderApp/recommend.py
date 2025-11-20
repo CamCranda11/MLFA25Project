@@ -15,8 +15,15 @@ def load_data():
         response = requests.get(DATA_URL)
         response.raise_for_status()
         
-        # Load the content into a pandas DataFrame (adjust sep if needed, e.g., sep=';')
-        song_data = pd.read_csv(StringIO(response.text))
+        song_data = pd.read_csv(
+            StringIO(response.text),
+            sep=',',
+            engine = 'python',
+            header=None,
+            name=EXPECTED_COLUMNS,
+            on_bad_lines='skip',
+            skiprows=1
+        )
 
         song_data.columns = song_data.columns.str.strip()
         song_data.columns = song_data.columns.str.lower()
