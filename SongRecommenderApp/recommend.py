@@ -85,68 +85,58 @@ def search_song_matches(input_song_name, data_df):
     
     return final_results.to_dict(orient='records')
 
-def get_song_recommendations(input_song_name, input_artist_name, data_df, num_recs=5):
-    try:
-        input_song_name = input_song_name.lower()
-        input_artist_name = input_artist_name.lower()
-
-        song_row = data_df[
-            (data_df['track_name'] == input_song_name) &
-            (data_df['artist_name'] == input_artist_name)
-        ]
-        if song_row.empty:
-            return {"error": f"Song '{input_song_name}' by {input_artist_name} not found in the dataset."}
-        
-        song_row = song_row.iloc[0]
-        song_genre = song_row['genre']
-        
-        genre_df = data_df[data_df['genre'] == song_genre].copy()
-        
-        if len(genre_df) < OPTIMAL_K:
-            return {"error": f"Not enough songs ({len(genre_df)}) in the genre '{song_genre}' to perform clustering."}
-
-        genre_features_df = genre_df[FEATURES_TO_CLUSTER].copy()
-        genre_features_df = genre_features_df.fillna(genre_features_df.mean())
-
-        genre_scaler = StandardScaler()
-        scaled_genre_features_df = genre_scaler.fit_transform(genre_features_df)
-
-        genre_kmeans_model = KMeans(n_clusters=OPTIMAL_K, init='k-means++', n_init=10, random_state=42)
-        genre_cluster_labels = genre_kmeans_model.fit_predict(scaled_genre_features_df)
-
-        genre_df_clustered = genre_df.copy()
-        genre_df_clustered['genre_cluster_id'] = genre_cluster_labels
-
-        input_song_genre_cluster = genre_df_clustered[
-            (genre_df_clustered['track_name'] == input_song_name) &
-            (genre_df_clustered['artist_name'] == input_artist_name)
-        ].iloc[0]['genre_cluster_id']
-
-        recommendations = genre_df_clustered[
-            (genre_df_clustered['genre_cluster_id'] == input_song_genre_cluster) &
-            ((genre_df_clustered['track_name'] != input_song_name) | (genre_df_clustered['artist_name'] != input_artist_name))
-        ]
-        
-        if len(recommendations) == 0:
-            return {"error": f"No similar songs found in the cluster for '{input_song_name}'."}
-
-        final_recs = recommendations.sample(min(num_recs, len(recommendations)))
-        
-        output_columns = ['track_name', 'artist_name', 'genre', 'danceability', 'energy', 'valence']
-        
-        return final_recs[output_columns].to_dict('records')
-
-    except Exception as e:
-        return {"error": f"An unexpected error occurred during recommendation: {e}"}
+def get_song_recommendations(input_song_name, input_artist_name, data_df):
+    song_input = input_song_name.lower().strip()
+    artist_input = input_artist_name.lower().strip()
+    
+    match_mask = (
+        data_df['track_name'].astype(str).str.lower().str.strip() == song_input
+    ) & (
+        data_df['artist_name'].astype(str).str.lower().str.strip() == artist_input
+    )
+    
+    matching_rows = data_df[match_mask]
+    
+    if matching_rows.empty:
+        return {"error": f"Song '{input_song_name}' by {input_artist_name} not found in the dataset."}
+    
+    seed_song = matching_rows.iloc[0]
+    seed_genre = seed_song['genre']
+    
+    recommendations = data_df[
+        (data_df['genre'] == seed_genre) & 
+        (data_df['track_name'].astype(str).str.lower().str.strip() != song_input)
+    ]
+    
+    recommendations = recommendations.sample(n=min(10, len(recommendations)))
+    
+    columns_to_keep = ['track_name', 'artist_name', 'genre']
+    final_results = recommendations[columns_to_keep].to_dict(orient='records')
+    
+    return final_results
 
 if __name__ == "__main__":
     song_data = load_data()
 
-    if len(sys.argv) < 2:
-        print(json.dumps({"error": "Missing arguments. Usage: python recommend.py <song_name> <artist_name>"}))
+    if len(sys.argv) < 3:
+        print(json.dumps({"error": "Error: Missing arguments. Usage: python recommend.py <mode> <song_name>"}))
         sys.exit(1)
-    
-    song = sys.argv[1]
-    
-    results = search_song_matches(song, song_data)
-    print(json.dumps(results))
+
+    command = sys.argv[1]
+    input_song = sys.argv[2]
+
+    if command == "search":
+        results = search_song_matches(input_song, song_data)
+        print(json.dumps(results))
+        
+    elif command == "recommend":
+        if len(sys.argv) >= 4:
+            input_artist = sys.argv[3]
+        else:
+            input_artist = "" # Fallback if no artist provided
+
+        results = get_song_recommendations(input_song, input_artist, song_data)
+        print(json.dumps(results))
+
+    else:
+        print(json.dumps({"error": f"Unknown command: {command}"}))

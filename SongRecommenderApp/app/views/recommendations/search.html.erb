@@ -16,37 +16,62 @@
     <div class="alert alert-danger" role="alert">
       <strong>Error:</strong> <%= @error %>
     </div>
-  <% elsif @matches.any? %>
-    <h2>Select the Correct Song:</h2>
-
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>Track Name</th>
-          <th>Artist Name</th>
-          <th>Genre</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @matches.each do |song| %>
-          <tr>
-            <td><%= song['track_name'] %></td>
-            <td><%= song['artist_name'] %></td>
-            <td><%= song['genre'] %></td>
-            <td>
-              <%= button_to "Get Recommendations", 
-                  recommendations_search_path, 
-                  method: :get,
-                  params: { 
-                      selected_song_name: song['track_name'], 
-                      selected_artist_name: song['artist_name'] 
-                  },
-                  class: "btn btn-sm btn-success" %>
-            </td>
+  <% elsif @matches.present? %>
+    <div style="margin-top: 20px; border-top: 2px solid #333; padding-top: 20px;">
+      <h2>Select Your Song</h2>
+      <table border="1" style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="background-color: #e6ffe6;">
+            <th style="padding: 10px;">Song</th>
+            <th style="padding: 10px;">Artist</th>
+            <th style="padding: 10px;">Genre</th>
+            <th style="padding: 10px;">Action</th>
           </tr>
-        <% end %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% @matches.each do |song| %>
+            <tr>
+              <td style="padding: 10px;"><%= song['track_name'] %></td>
+              <td style="padding: 10px;"><%= song['artist_name'] %></td>
+              <td style="padding: 10px;"><%= song['genre'] %></td>
+              <td style="padding: 10px; text-align: center;">
+                <%= link_to "Get Recommendations", 
+                    recommendations_search_path(selected_song_name: song['track_name'], selected_artist_name: song['artist_name']), 
+                    class: "button",
+                    style: "text-decoration: none; color: blue; font-weight: bold;" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+  <% if @recommendations.present? %>
+    <div class="recommendations-section" style="margin-top: 40px; border-top: 2px solid #ccc; padding-top: 20px;">
+      <h2>Recommended Songs</h2>
+    
+      <table border="1" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+        <thead>
+          <tr style="background-color: #f2f2f2;">
+            <th style="padding: 10px;">Song Name</th>
+            <th style="padding: 10px;">Artist</th>
+            <th style="padding: 10px;">Genre</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @recommendations.each do |song| %>
+            <tr>
+              <td style="padding: 10px;"><%= song['track_name'] %></td>
+              <td style="padding: 10px;"><%= song['artist_name'] %></td>
+              <td style="padding: 10px;"><%= song['genre'] %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    
+      <div style="margin-top: 20px;">
+        <%= link_to "Search Again", root_path, style: "padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;" %>
+      </div>
+    </div>
   <% end %>
 </div>
