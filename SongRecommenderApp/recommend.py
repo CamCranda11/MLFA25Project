@@ -103,22 +103,47 @@ def get_song_recommendations(input_song_name, input_artist_name, data_df):
     matching_rows = data_df[match_mask]
     
     if matching_rows.empty:
-        return {"error": f"Song '{input_song_name}' by {input_artist_name} not found in the dataset."}
+        return {"error": f"Song '{input_song_name}' by {input_artist_name} not found."}
     
     seed_song = matching_rows.iloc[0]
     seed_genre = seed_song['genre']
     
-    recommendations = data_df[
-        (data_df['genre'] == seed_genre) & 
-        (data_df['track_name'].astype(str).str.lower().str.strip() != song_input)
+    genre_df = data_df[data_df['genre'] == seed_genre].copy()
+
+    if len(genre_df) < OPTIMAL_K:
+        return genre_df.sample(n=min(10, len(genre_df)))[['track_name', 'artist_name', 'genre']].to_dict(orient='records')
+
+    for col in FEATURES_TO_CLUSTER:
+        genre_df[col] = pd.to_numeric(genre_df[col], errors='coerce')
+    
+    genre_df = genre_df.dropna(subset=FEATURES_TO_CLUSTER)
+    
+    scaler = StandardScaler()
+    scaled_data = scaler.fit_transform(genre_df[FEATURES_TO_CLUSTER])
+    
+    kmeans = KMeans(n_clusters=OPTIMAL_K, init='k-means++', random_state=42)
+    genre_df['cluster'] = kmeans.fit_predict(scaled_data)
+    
+    seed_in_genre = genre_df[
+        (genre_df['track_name'].astype(str).str.lower().str.strip() == song_input) & 
+        (genre_df['artist_name'].astype(str).str.lower().str.strip() == artist_input)
+    ]
+    
+    if seed_in_genre.empty:
+        # Fallback if seed got dropped during cleaning (rare)
+        return {"error": "Song data was incomplete and could not be clustered."}
+        
+    current_cluster = seed_in_genre.iloc[0]['cluster']
+    
+    recommendations = genre_df[
+        (genre_df['cluster'] == current_cluster) & 
+        (genre_df['track_name'].astype(str).str.lower().str.strip() != song_input)
     ]
     
     recommendations = recommendations.sample(n=min(10, len(recommendations)))
     
     columns_to_keep = ['track_name', 'artist_name', 'genre']
-    final_results = recommendations[columns_to_keep].to_dict(orient='records')
-    
-    return final_results
+    return recommendations[columns_to_keep].to_dict(orient='records')
 
 if __name__ == "__main__":
     song_data = load_data()
@@ -132,7 +157,6 @@ if __name__ == "__main__":
     if command == "search":
         input_song = sys.argv[2] if len(sys.argv) > 2 else ""
         input_artist = sys.argv[3] if len(sys.argv) > 3 else ""
-        
         results = search_song_matches(input_song, input_artist, song_data)
         print(json.dumps(results))
         
