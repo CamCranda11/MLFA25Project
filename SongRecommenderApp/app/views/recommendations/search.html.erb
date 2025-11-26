@@ -47,7 +47,7 @@
   <% end %>
 
   <% if @recommendations.present? %>
-    <h2>Recommended Songs</h2>
+    <h2>Recommended Songs based on <%= params[:selected_song_name] %> by <%= params[:selected_artist_name] %></h2>
     <table class="styled-table">
       <thead>
         <tr style="background-color: #2980b9;"> 
@@ -66,9 +66,5 @@
         <% end %>
       </tbody>
     </table>
-    
-    <div style="margin-top: 30px; text-align: center;">
-      <%= link_to "Search Again", root_path, class: "action-btn", style: "background-color: #6c757d;" %>
-    </div>
   <% end %>
 </div>
