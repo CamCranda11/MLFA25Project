@@ -7,6 +7,10 @@ class RecommendationsController < ApplicationController
     @matches = []
     @recommendations = []
 
+    if params[:song_name].blank? && params[:artist_name].blank? && params[:selected_song_name].blank?
+      return
+    end
+
     if params[:selected_song_name].present?
       song_name = params[:selected_song_name]
       artist_name = params[:selected_artist_name]
@@ -31,11 +35,13 @@ class RecommendationsController < ApplicationController
         flash.now[:error] = "An error occurred while generating recommendations."
       end
 
-    elsif params[:song_name].present?
-      song_name = params[:song_name]
-      Rails.logger.debug "DEBUG: Searching for '#{song_name}'..."
-    
-      stdout, stderr, status = Open3.capture3("python3", "recommend.py", "search", song_name)
+    elsif params[:song_name].present? || params[:artist_name].present?
+      song_name = params[:song_name] || ""
+      artist_name = params[:artist_name] || "" 
+      
+      Rails.logger.debug "DEBUG: Searching for Song: '#{song_name}' | Artist: '#{artist_name}'"
+      
+      stdout, stderr, status = Open3.capture3("python3", "recommend.py", "search", song_name, artist_name)
 
       if status.success?
         begin

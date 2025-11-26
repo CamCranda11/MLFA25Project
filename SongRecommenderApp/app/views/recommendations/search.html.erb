@@ -1,15 +1,15 @@
 <div class="container">
   <h1>Cameron's Song Recommendation Tool</h1>
 
-  <%= form_with url: recommendations_search_path, method: :get, local: true, class: "mb-4" do %>
-    <div class="row">
-      <div class="col-md-8">
-        <%= text_field_tag :song_name, params[:song_name], class: "form-control", placeholder: "Enter Song Name" %>
-      </div>
-      <div class="col-md-4">
-        <%= submit_tag "Find Matches", class: "btn btn-primary w-100" %>
-      </div>
+  <%= form_with url: recommendations_search_path, method: :get, local: true, class: "search-form" do |form| %>
+    <div style="margin-bottom: 10px;">
+      <p>Search by Song Name and/or Artist Name:</p>
+      <%= form.text_field :song_name, placeholder: "Enter Song Name", style: "padding: 5px; width: 300px;" %>
     </div>
+    <div style="margin-bottom: 10px;">
+      <%= form.text_field :artist_name, placeholder: "Enter Artist Name", style: "padding: 5px; width: 300px;" %>
+    </div>
+    <%= form.submit "Find Matches", style: "padding: 5px 15px; cursor: pointer;" %>
   <% end %>
 
   <% if @error %>

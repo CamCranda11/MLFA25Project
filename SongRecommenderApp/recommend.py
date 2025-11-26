@@ -61,29 +61,34 @@ def load_data():
         print(json.dumps({"error": f"Failed to load data: {e}"}))
         sys.exit(1)
 
-def search_song_matches(input_song_name, data_df):
-    input_lower = input_song_name.lower()
-    mask = data_df['track_name'].astype(str).str.lower().str.contains(input_lower, na=False)
-    matches = data_df[mask].copy()
+def search_song_matches(input_song_name, input_artist_name, data_df):
+    matches = data_df.copy()
+
+    if input_song_name:
+        input_song_lower = input_song_name.lower().strip()
+        matches = matches[matches['track_name'].astype(str).str.lower().str.contains(input_song_lower, na=False)]
+
+    if input_artist_name:
+        input_artist_lower = input_artist_name.lower().strip()
+        matches = matches[matches['artist_name'].astype(str).str.lower().str.contains(input_artist_lower, na=False)]
     
     if matches.empty:
-        return {"error": f"No songs matching '{input_song_name}' found in the dataset."}
+        return {"error": "No matches found."}
     
-    matches['is_exact'] = matches['track_name'].str.lower() == input_lower
-    matches['starts_with'] = matches['track_name'].str.lower().str.startswith(input_lower)
-    matches['title_len'] = matches['track_name'].str.len()
-    matches = matches.sort_values(
-        by=['is_exact', 'starts_with', 'title_len'], 
-        ascending=[False, False, True]
-    )
-    
-    columns_to_keep = ['track_id', 'track_name', 'artist_name', 'genre']
-    
+    if input_song_name:
+        # If we have a song name, prioritize exact song title matches
+        matches['is_exact'] = matches['track_name'].str.lower() == input_song_name.lower().strip()
+        matches['starts_with'] = matches['track_name'].str.lower().str.startswith(input_song_name.lower().strip())
+        matches['title_len'] = matches['track_name'].str.len()
+        
+        matches = matches.sort_values(by=['is_exact', 'starts_with', 'title_len'], ascending=[False, False, True])
+    else:
+        matches = matches.sort_values(by=['track_name'], ascending=[True])
+
+    columns_to_keep = ['track_name', 'artist_name', 'genre']
     final_columns = [col for col in columns_to_keep if col in matches.columns]
     
-    final_results = matches[final_columns].head(50)
-    
-    return final_results.to_dict(orient='records')
+    return matches[final_columns].head(50).to_dict(orient='records')
 
 def get_song_recommendations(input_song_name, input_artist_name, data_df):
     song_input = input_song_name.lower().strip()
@@ -118,25 +123,25 @@ def get_song_recommendations(input_song_name, input_artist_name, data_df):
 if __name__ == "__main__":
     song_data = load_data()
 
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 2:
         print(json.dumps({"error": "Error: Missing arguments. Usage: python recommend.py <mode> <song_name>"}))
         sys.exit(1)
 
     command = sys.argv[1]
-    input_song = sys.argv[2]
 
     if command == "search":
-        results = search_song_matches(input_song, song_data)
+        input_song = sys.argv[2] if len(sys.argv) > 2 else ""
+        input_artist = sys.argv[3] if len(sys.argv) > 3 else ""
+        
+        results = search_song_matches(input_song, input_artist, song_data)
         print(json.dumps(results))
         
     elif command == "recommend":
+        input_song = sys.argv[2]
         if len(sys.argv) >= 4:
             input_artist = sys.argv[3]
         else:
-            input_artist = "" # Fallback if no artist provided
+            input_artist = ""
 
         results = get_song_recommendations(input_song, input_artist, song_data)
         print(json.dumps(results))
-
-    else:
-        print(json.dumps({"error": f"Unknown command: {command}"}))
