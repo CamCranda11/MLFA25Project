@@ -2,22 +2,28 @@
   <h1>Cameron's Song Recommendation Tool</h1>
   <p class="subtitle">Search by Song Name and/or Artist Name</p>
 
+  <%# SEARCH FORM %>
   <%= form_with url: recommendations_search_path, method: :get, local: true, class: "search-form" do |form| %>
+    <%# Song Name Input. %>
     <div class="input-group">
       <%= form.text_field :song_name, placeholder: "Enter Song Name..." %>
     </div>
+    <%# Artist Name Input. %>
     <div class="input-group">
       <%= form.text_field :artist_name, placeholder: "Enter Artist Name..." %>
     </div>
+    <%# Submit Button. %>
     <%= form.submit "Find Matches" %>
   <% end %>
 
+  <%# ALERT/ERROR MESSAGES %>
   <% flash.each do |type, message| %>
     <div style="background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
       <%= message %>
     </div>
   <% end %>
 
+  <%# SEARCH MATCHES TABLE %>
   <% if @matches.present? %>
     <h2>Select Your Song</h2>
     <table class="styled-table">
@@ -30,12 +36,14 @@
         </tr>
       </thead>
       <tbody>
+        <%# Iterates through each match in the search. %>
         <% @matches.each do |song| %>
           <tr>
             <td><%= song['track_name'] %></td>
             <td><%= song['artist_name'] %></td>
             <td><%= song['genre'] %></td>
             <td>
+              <%# Link to initiate the recommendations process. %>
               <%= link_to "Get Recommendations", 
                   recommendations_search_path(selected_song_name: song['track_name'], selected_artist_name: song['artist_name']), 
                   class: "action-btn" %>
@@ -46,7 +54,9 @@
     </table>
   <% end %>
 
+  <%# RECOMMENDATIONS TABLE %>
   <% if @recommendations.present? %>
+    <%# Displays seed song for context. %>
     <h2>Recommended Songs based on <%= params[:selected_song_name] %> by <%= params[:selected_artist_name] %></h2>
     <table class="styled-table">
       <thead>
@@ -57,6 +67,7 @@
         </tr>
       </thead>
       <tbody>
+        <%# Iterates through recommended songs. %>
         <% @recommendations.each do |song| %>
           <tr>
             <td><%= song['track_name'] %></td>
